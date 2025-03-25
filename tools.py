@@ -137,9 +137,6 @@ default_prompt = f"""
 
 client = AsyncOpenAI()
 
-# client = AsyncOpenAI(
-#    api_key="sk-c135ac134248428086be2db72b677e23", base_url="https://api.deepseek.com"
-# )
 
 prompts = {"en2ch": en2ch_prompt, "ch2en": ch2en_prompt, "default": default_prompt}
 
