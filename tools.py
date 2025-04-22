@@ -169,14 +169,14 @@ default_prompt = f"""
 """
 
 
-client = AsyncOpenAI(
-    api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com"
-)
+# client = AsyncOpenAI(
+#     api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com"
+# )
 
-# client = AsyncOpenAI()
+client = AsyncOpenAI()
 
-MODEL = "deepseek-chat"
-# MODEL = "gpt-4.1"
+# MODEL = "deepseek-chat"
+MODEL = "gpt-4.1"
 
 prompts = {"en2ch": en2ch_prompt, "ch2en": ch2en_prompt, "default": default_prompt}
 
@@ -200,7 +200,13 @@ async def one_call(
     )
     final_tool_calls = {}
     # Use Unicode circle animation for a smoother waiting effect
-    spinner = itertools.cycle(["◐", "◓", "◑", "◒"])
+    # spinner = itertools.cycle(["|", "/", "-", "\\"])
+    # spinner = itertools.cycle(["◴", "◷", "◶", "◵"])
+    # spinner = itertools.cycle(
+    #     ["🕛", "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚"]
+    # )
+    spinner = itertools.cycle(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
+    # spinner = itertools.cycle(["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"])
     async for chunk in response:
         if getattr(chunk.choices[0].delta, "tool_calls", None) is not None:
             for tool_call in chunk.choices[0].delta.tool_calls or []:
@@ -219,10 +225,11 @@ async def one_call(
                         final_tool_calls[
                             index
                         ].function.arguments += tool_call.function.arguments
-        if chunk.choices[0].delta.content is not None:
-            print(chunk.choices[0].delta.content, end="")
+        if chunk.choices[0].delta.content is None:
+            if chunk.choices[0].finish_reason != "stop":
+                print(f"\r{next(spinner)}", end="", flush=True)
         else:
-            print(f"\r{next(spinner)}", end="", flush=True)
+            print(chunk.choices[0].delta.content, end="")
 
     if final_tool_calls:
         for tool_call in final_tool_calls.values():
